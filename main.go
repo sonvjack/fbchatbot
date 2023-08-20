@@ -41,6 +41,8 @@ func main() {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	SetupCloseHandler(cancel, &wg, &srv, ctx)
+
+	// fb bot reply queue
 	handler.MessageChan = make(chan handler.MsgTemplate, 1)
 	wg.Add(1)
 	go handler.SendFBMsg(ctx, &wg)
@@ -53,9 +55,8 @@ func main() {
 
 		err := srv.ListenAndServe()
 		if err != nil {
-			logger.Logger.Error("bot service start error", zap.Error(err))
+			logger.Logger.Error("bot service http stopped", zap.Error(err))
 		}
-
 	}()
 
 	wg.Wait()
@@ -68,12 +69,12 @@ func SetupCloseHandler(cancel context.CancelFunc, wg *sync.WaitGroup, srv *http.
 	go func() {
 		defer wg.Done()
 		<-c
+		cancel()
 		err := srv.Shutdown(ctx)
 		if err != nil {
 			logger.Logger.Error("http stop error", zap.Error(err))
 			return
 		}
-		cancel()
 		logger.Logger.Info("\r- Ctrl+C pressed in Terminal")
 	}()
 }
