@@ -3,7 +3,7 @@ WORKDIR /fbchatbot
 
 COPY . /fbchatbot
 
-RUN go build
+RUN export GOPROXY=https://goproxy.cn && go build
 
 FROM alpine:latest
 
